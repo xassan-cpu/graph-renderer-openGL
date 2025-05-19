@@ -1,6 +1,5 @@
-#include <glad/glad.h>
 #include "mesh.hpp"
-#include "gl_utils.hpp"
+#include "core/gl_utils/gl_utils.hpp"
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, bool withNormals, bool withTexCoords)
 {

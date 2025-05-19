@@ -1,6 +1,7 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "core/gl_includes.hpp"
+
 #include <string>
 #include <iostream>
 

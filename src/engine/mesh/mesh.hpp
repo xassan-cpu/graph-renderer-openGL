@@ -1,9 +1,10 @@
-// mesh.hpp
 #pragma once
 
-#include <vector>
-#include <glad/glad.h>
+#include "core/gl_includes.hpp"
 #include <glm/glm.hpp>
+
+#include <vector>
+
 
 struct Vertex {
     glm::vec3 position;

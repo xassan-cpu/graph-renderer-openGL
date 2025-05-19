@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 namespace Constants
 {
     inline constexpr unsigned int screen_width  = 800;

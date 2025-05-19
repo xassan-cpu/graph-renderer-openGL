@@ -1,7 +1,7 @@
 #include "texture.hpp"
 #include <stb_image.h>
 #include <iostream>
-#include "gl_utils.hpp"
+#include "core/gl_utils/gl_utils.hpp"
 
 Texture::Texture(const std::string& path)
 {

@@ -1,13 +1,45 @@
 cmake_minimum_required(VERSION 3.20)
 
-Project(OpenGLTemplate)
+project(OpenGLTemplate)
 
 # Set C++ standard to C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Collect all source and header files in src/
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.h src/*.hpp resources/shaders/*.glsl)
+# Source files
+set(SOURCES
+    src/main.cpp
+    src/core/shader/shader.cpp
+    src/core/texture/texture.cpp
+    src/core/gl_utils/gl_utils.cpp
+    src/engine/camera/camera.cpp
+    src/engine/mesh/mesh.cpp
+    src/engine/mesh_utils/meshutils.cpp
+    src/gui/gui.cpp
+    src/app/app.cpp
+    src/renderer/renderer.cpp
+)
+
+# Header files
+set(HEADERS
+    src/core/shader/shader.hpp
+    src/core/texture/texture.hpp
+    src/core/gl_utils/gl_utils.hpp
+    src/engine/camera/camera.hpp
+    src/engine/mesh/mesh.hpp
+    src/engine/mesh_utils/meshutils.hpp
+    src/gui/gui.hpp
+    src/app/app.hpp
+    src/renderer/renderer.hpp
+    src/core/constants.hpp
+    src/core/gl_includes.hpp
+)
+
+set(SHADER_SOURCES
+
+)
+
+list(APPEND SOURCES ${HEADERS})
 
 # === ImGui Setup ===
 
@@ -58,6 +90,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${STB_DIR})
 set(GLM_DIR external/glm)
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_DIR})
 
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
 # === Platform-specific OpenGL linking ===
 if (WIN32)
   set(OPENGL_LIBS opengl32)
@@ -79,9 +113,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Copy shaders to the build directory after building the project
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/resources/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders)
+    ${CMAKE_SOURCE_DIR}/res/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders)
 
 # Copy textures to the build directory after building the project
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/resources/textures $<TARGET_FILE_DIR:${PROJECT_NAME}>/textures)
+    ${CMAKE_SOURCE_DIR}/res/textures $<TARGET_FILE_DIR:${PROJECT_NAME}>/textures)
