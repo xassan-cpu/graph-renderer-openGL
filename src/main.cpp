@@ -1,32 +1,42 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "camera.hpp"
+#include "gl_utils.hpp"
+#include "constants.hpp"
+#include "gui.hpp"
+
 #include <iostream>
+#include <array>
+#include <vector>
 
+// ---------------------------------------------------------------------------------------------
+// GLFW Callback Functions
+// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window, Camera& camera, float deltaTime);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
+// ---------------------------------------------------------------------------------------------
+// Main Function
+// ---------------------------------------------------------------------------------------------
 int main()
 {
-
+    // -----------------------------------------------------------------------------------------
+    // GLFW + OpenGL Context Setup
+    // -----------------------------------------------------------------------------------------
     glfwInit();
-
-    // glfw: specifies the version of OpenGL
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-    // glfw: core-profiler, smaller subset of OpenGL feat. w/o backwards-compatibility.
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Hello Window", NULL, NULL);
+    GLFWwindow* window =
+        glfwCreateWindow(Constants::screen_width, Constants::screen_height, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window\n";
@@ -36,43 +46,119 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Capture mouse input, disabling cursor
+    /*glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);*/
 
-    // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD\n";
         return -1;
     }
 
-    // render loop
+    // -----------------------------------------------------------------------------------------
+    // Camera and Input Setup
+    // -----------------------------------------------------------------------------------------
+    Camera camera{ glm::vec3(0.0f, 0.0f, 3.0f) };
+
+    // Pass the camera to callback functions via window user pointer
+    glfwSetWindowUserPointer(window, &camera);
+
+    // -----------------------------------------------------------------------------------------
+    // ImGui Setup
+    // -----------------------------------------------------------------------------------------
+    Gui gui(window);
+
+    // -----------------------------------------------------------------------------------------
+    // OpenGL State
+    // -----------------------------------------------------------------------------------------
+    glEnable(GL_DEPTH_TEST);
+
+    // -----------------------------------------------------------------------------------------
+    // Main Render Loop
+    // -----------------------------------------------------------------------------------------
+    float deltaTime{ 0.0f }, lastFrame{ 0.0f };
+
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        processInput(window);
+        float currentFrame{ static_cast<float>(glfwGetTime()) };
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-        // rendering here
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        // glfw: swap buffers and poll IO events.
+        processInput(window, camera, deltaTime);
+
+        gui.beginFrame();
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        gui.endFrame();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
+        glCheckError();
     }
 
-    // glfw: terminate, clearing all previously allocated GLFW ressources.
+    // -----------------------------------------------------------------------------------------
+    // Cleanup
+    // -----------------------------------------------------------------------------------------
+
     glfwTerminate();
     return 0;
 }
 
-// glfw: whenever the window size changes.
+// GLFW: Callback function for framebuffer size changes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released.
-void processInput(GLFWwindow* window)
-{
+// GLFW: Callback function for mouse movement
+void processInput(GLFWwindow* window, Camera& camera, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.processKeyboard(CameraMovement::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.processKeyboard(CameraMovement::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.processKeyboard(CameraMovement::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.processKeyboard(CameraMovement::RIGHT, deltaTime);
+}
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+    static float lastX{ Constants::screen_width / 2.0f };
+    static float lastY{ Constants::screen_height / 2.0f };
+    static bool firstMouse{ true };
+
+    float xpos{ static_cast<float>(xposIn) };
+    float ypos{ static_cast<float>(yposIn) };
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset{ xpos - lastX };
+    float yoffset{ lastY - ypos };
+    lastX = xpos;
+    lastY = ypos;
+
+    Camera* camera{
+        static_cast<Camera*>(glfwGetWindowUserPointer(window)) };
+    if (camera) {
+        camera->processMouseMovement(xoffset, yoffset);
+    }
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    Camera* camera{
+        static_cast<Camera*>(glfwGetWindowUserPointer(window)) };
+    if (camera) {
+        camera->processMouseScroll(static_cast<float>(yoffset));
+    }
 }
