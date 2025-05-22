@@ -1,12 +1,9 @@
 #pragma once
-
 #include "core/gl_includes.hpp"
-
 #include "renderer/renderer.hpp"
 #include "gui/gui.hpp"
 #include "engine/camera/camera.hpp"
 #include "core/constants.hpp"
-
 #include <memory>
 
 class App
@@ -14,7 +11,7 @@ class App
 public:
     App(int width = Constants::screen_width,
         int height = Constants::screen_height,
-        const char* title = "GLFW Window");
+        const char* title = "Graph Renderer");
     ~App();
 
     void run();

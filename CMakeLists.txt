@@ -18,6 +18,8 @@ set(SOURCES
     src/gui/gui.cpp
     src/app/app.cpp
     src/renderer/renderer.cpp
+    src/graph/graph.cpp
+    src/graph/function_library.cpp
 )
 
 # Header files
@@ -33,10 +35,13 @@ set(HEADERS
     src/renderer/renderer.hpp
     src/core/constants.hpp
     src/core/gl_includes.hpp
+    src/graph/graph.hpp
+    src/graph/function_library.hpp
 )
 
 set(SHADER_SOURCES
-
+    res/shaders/basic.vert.glsl
+    res/shaders/basic.frag.glsl
 )
 
 list(APPEND SOURCES ${HEADERS})
@@ -61,7 +66,7 @@ list(APPEND SOURCES ${IMGUI_SOURCES} ${IMGUI_BACKEND_SOURCES})
 # === Create Executable ===
 
 # Create the executable from the source files
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${SHADER_SOURCES})
 
 # Add ImGui include directories
 target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/backends)

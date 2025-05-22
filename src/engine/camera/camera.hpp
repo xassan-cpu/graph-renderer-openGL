@@ -10,23 +10,23 @@ enum class Projection { Perspective, Orthographic };
 
 class Camera {
 public:
-    static constexpr float defaultYaw         = -90.0f;
-    static constexpr float defaultPitch       =  0.0f;
-    static constexpr float defaultSpeed       =  2.5f;
-    static constexpr float defaultSensitivity =  0.1f;
-    static constexpr float defaultFov         =  45.0f;
+    static constexpr float defaultYaw = -90.0f;
+    static constexpr float defaultPitch = 0.0f;
+    static constexpr float defaultSpeed = 2.5f;
+    static constexpr float defaultSensitivity = 0.1f;
+    static constexpr float defaultFov = 45.0f;
 
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
-           glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-           float yaw = defaultYaw, float pitch = defaultPitch)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f),
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+        float yaw = defaultYaw, float pitch = defaultPitch)
         : position_(position),
-          front_(glm::vec3(0.0f, 0.0f, -1.0f)),
-          worldUp_(up),
-          yaw_(yaw),
-          pitch_(pitch),
-          movementSpeed_(defaultSpeed),
-          mouseSensitivity_(defaultSensitivity),
-          fov_(defaultFov) {
+        front_(glm::vec3(0.0f, 0.0f, -1.0f)),
+        worldUp_(up),
+        yaw_(yaw),
+        pitch_(pitch),
+        movementSpeed_(defaultSpeed),
+        mouseSensitivity_(defaultSensitivity),
+        fov_(defaultFov) {
         updateCameraVectors();
     }
 
@@ -43,49 +43,85 @@ public:
         return glm::lookAt(position_, position_ + front_, up_);
     }
 
-    // Camera movement and input handling
-    void processKeyboard(CameraMovement direction, float deltaTime) {
-        const float velocity = movementSpeed_ * deltaTime;
-        if (direction == CameraMovement::FORWARD)
-            position_ += front_ * velocity;
-        if (direction == CameraMovement::BACKWARD)
-            position_ -= front_ * velocity;
-        if (direction == CameraMovement::LEFT)
-            position_ -= right_ * velocity;
-        if (direction == CameraMovement::RIGHT)
-            position_ += right_ * velocity;
+    [[nodiscard]] glm::mat4 getProjectionMatrix(float aspectRatio) const {
+        if (projectionMode_ == Projection::Perspective) {
+            return glm::perspective(glm::radians(fov_), aspectRatio, 0.1f, 100.0f);
+        }
+        else {
+            float orthoSize = 3.0f;
+            return glm::ortho(-orthoSize * aspectRatio, orthoSize * aspectRatio,
+                -orthoSize, orthoSize, 0.1f, 100.f);
+        }
     }
 
-    void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true) {
-        xoffset *= mouseSensitivity_;
-        yoffset *= mouseSensitivity_;
-
-        yaw_   += xoffset;
-        pitch_ += yoffset;
-
-        if (constrainPitch)
-            pitch_ = glm::clamp(pitch_, -89.0f, 89.0f);
-
-        updateCameraVectors();
+    [[nodiscard]] glm::mat4 getViewProjectionMatrix(float aspectRatio) const {
+        return getProjectionMatrix(aspectRatio) * getViewMatrix();
     }
 
-    void processMouseScroll(float yoffset) {
-        fov_ = glm::clamp(fov_ - yoffset, 1.0f, 45.0f);
-    }
+        // Camera movement and input handling
+        void processKeyboard(CameraMovement direction, float deltaTime) {
+            const float velocity = movementSpeed_ * deltaTime;
+            if (direction == CameraMovement::FORWARD)
+                position_ += front_ * velocity;
+            if (direction == CameraMovement::BACKWARD)
+                position_ -= front_ * velocity;
+            if (direction == CameraMovement::LEFT)
+                position_ -= right_ * velocity;
+            if (direction == CameraMovement::RIGHT)
+                position_ += right_ * velocity;
+        }
 
-    // Read-only accessors
-    [[nodiscard]] glm::vec3 getPosition() const { return position_; }
-    [[nodiscard]] glm::vec3 getFront() const { return front_; }
-    [[nodiscard]] glm::vec3 getUp() const { return up_; }
-    [[nodiscard]] glm::vec3 getRight() const { return right_; }
-    [[nodiscard]] float getYaw() const { return yaw_; }
-    [[nodiscard]] float getPitch() const { return pitch_; }
-    [[nodiscard]] float getFov() const { return fov_; }
+        void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true) {
+            xoffset *= mouseSensitivity_;
+            yoffset *= mouseSensitivity_;
 
-    // Optional setter for position (e.g., reset camera)
-    void setPosition(const glm::vec3& position) {
-        position_ = position;
-    }
+            yaw_ += xoffset;
+            pitch_ += yoffset;
+
+            if (constrainPitch)
+                pitch_ = glm::clamp(pitch_, -89.0f, 89.0f);
+
+            updateCameraVectors();
+        }
+
+        void processMouseScroll(float yoffset) {
+            fov_ = glm::clamp(fov_ - yoffset, 1.0f, 45.0f);
+        }
+
+        // Read-only accessors
+        [[nodiscard]] glm::vec3  getPosition()       const { return position_; }
+        [[nodiscard]] glm::vec3  getFront()          const { return front_; }
+        [[nodiscard]] glm::vec3  getUp()             const { return up_; }
+        [[nodiscard]] glm::vec3  getRight()          const { return right_; }
+        [[nodiscard]] float      getYaw()            const { return yaw_; }
+        [[nodiscard]] float      getPitch()          const { return pitch_; }
+        [[nodiscard]] float      getFov()            const { return fov_; }
+        [[nodiscard]] Projection getProjectionMode() const { return projectionMode_; }
+
+
+        void setPosition(const glm::vec3 & position) {
+            position_ = position;
+        }
+
+
+        void toggleProjectionMode() {
+            projectionMode_ = (projectionMode_ == Projection::Perspective)
+                ? Projection::Orthographic
+                : Projection::Perspective;
+        }
+
+        void setProjectionMode(Projection mode) {
+            projectionMode_ = mode;
+        }
+
+
+        void reset() {
+            position_ = glm::vec3(0.0f, 0.0f, 3.0f);
+            yaw_ = defaultYaw;
+            pitch_ = defaultPitch;
+            fov_ = defaultFov;
+            updateCameraVectors();
+        }
 
 private:
     void updateCameraVectors() {
@@ -114,4 +150,6 @@ private:
     float movementSpeed_;
     float mouseSensitivity_;
     float fov_;
+
+    Projection projectionMode_ = Projection::Perspective;
 };

@@ -1,11 +1,10 @@
 #pragma once
-
 #include "core/gl_includes.hpp"
-
 #include <glm/glm.hpp>
-
 #include "engine/camera/camera.hpp"
-#include "gui/gui.hpp"
+#include "graph/graph.hpp"
+#include "core/shader/shader.hpp"
+#include <memory>
 
 class Renderer
 {
@@ -18,5 +17,8 @@ public:
 
 private:
 	// Add renderable objects, shaders, etc. as needed
+	std::shared_ptr<Shader> shader;
+	std::unique_ptr<Graph> graph;
+
 	void clearScreen() const;
 };

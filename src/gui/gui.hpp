@@ -7,8 +7,8 @@ public:
     Gui(GLFWwindow* window);
     ~Gui();
 
-    void beginFrame();  // Starts ImGui frame
-    void endFrame();    // Renders ImGui draw data
+    void beginFrame();
+    void endFrame();
 
 private:
     void showDemoPanel();

@@ -3,8 +3,13 @@
 #include <iostream>
 
 App::App(int width, int height, const char* title)
-    : width(width), height(height), title(title),
-      renderer{}, camera{ glm::vec3(0.0f, 0.0f, 3.0f) }
+    : width(width),
+      height(height),
+      title(title),
+      window(nullptr),
+      gui(nullptr),
+      renderer{},
+      camera{}
 {
     init();
 }
@@ -33,12 +38,14 @@ void App::init()
     glfwMakeContextCurrent(window);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     glfwSetWindowUserPointer(window, this);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cout << "Failed to initialize GLAD\n";
         std::exit(EXIT_FAILURE);
     }
@@ -49,8 +56,8 @@ void App::init()
 
 void App::run()
 {
-    float deltaTime = 0.0f;
-    float lastFrame = 0.0f;
+    float deltaTime{ 0.0f };
+    float lastFrame{ 0.0f };
 
     while (!glfwWindowShouldClose(window))
     {
@@ -94,14 +101,14 @@ void App::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void App::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
-    App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
+    App* app{ static_cast<App*>(glfwGetWindowUserPointer(window)) };
 
-    static float lastX = Constants::screen_width / 2.0f;
-    static float lastY = Constants::screen_height / 2.0f;
-    static bool firstMouse = true;
+    static float lastX{ Constants::screen_width / 2.0f };
+    static float lastY{ Constants::screen_height / 2.0f };
+    static bool firstMouse{ true };
 
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
+    float xpos{ static_cast<float>(xposIn) };
+    float ypos{ static_cast<float>(yposIn) };
 
     if (firstMouse)
     {
@@ -110,8 +117,8 @@ void App::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
         firstMouse = false;
     }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
+    float xoffset{ xpos - lastX };
+    float yoffset{ lastY - ypos };
     lastX = xpos;
     lastY = ypos;
 
@@ -123,7 +130,7 @@ void App::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
 void App::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
+    App* app{ static_cast<App*>(glfwGetWindowUserPointer(window)) };
     if (app)
     {
         app->camera.processMouseScroll(static_cast<float>(yoffset));
