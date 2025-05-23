@@ -43,15 +43,15 @@ void Renderer::render(const Camera& camera, float deltaTime)
     int count{ graph->getPointCount() };
 
     // CPU Instancing
-    for (std::size_t i = 0; i < count; ++i)
+    /*for (std::size_t i = 0; i < count; ++i)
     {
         glm::mat4 model = graph->getModelMatrix(i, glfwGetTime());
         shader->setMat4("u_model", model);
         mesh.draw();
-    }
+    }*/
 
     // GPU Instancing
-    /*std::vector<glm::mat4> modelMatrices = graph->getAllModelMatrices(glfwGetTime());
+    std::vector<glm::mat4> modelMatrices = graph->getAllModelMatrices(glfwGetTime());
     graph->getMesh().setInstanceTransforms(modelMatrices);
-    graph->getMesh().drawInstanced(modelMatrices.size());*/
+    graph->getMesh().drawInstanced(modelMatrices.size());
 }

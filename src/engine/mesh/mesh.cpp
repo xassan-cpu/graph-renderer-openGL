@@ -84,7 +84,7 @@ void Mesh::drawInstanced(GLsizei instanceCount) const
         draw();
         return;
     }
-    std::cout << "gpu instancing" << '\n';
+    //std::cout << "gpu instancing" << '\n';
     glBindVertexArray(VAO);
     glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount, instanceCount);
     glBindVertexArray(0);
